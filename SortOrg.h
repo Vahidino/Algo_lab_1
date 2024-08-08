@@ -1,3 +1,5 @@
+
+#orginal version that had issues, only used for refference
 #pragma once
 #include <iostream>
 #include <vector>
@@ -79,7 +81,7 @@ int partition_Median(T array[], int left, int right) {
 template<typename T>
 void quicksortMedian(T array[], int indexStart, int indexEnd)
 {
-	if (indexStart >= indexEnd)//för att inte få stack overflow för fuck dedär
+	if (indexStart >= indexEnd)//fÃ¶r att inte fÃ¥ stack overflow fÃ¶r fuck dedÃ¤r
 		return;
 	if (indexStart >= 0) {
 		// Partition the array, and get the index of the pivot
