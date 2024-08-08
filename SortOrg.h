@@ -1,5 +1,5 @@
 
-#orginal version that had issues, only used for refference
+// Original version that had issues, was only used for reference
 #pragma once
 #include <iostream>
 #include <vector>
