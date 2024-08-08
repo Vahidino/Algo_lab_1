@@ -128,7 +128,12 @@ void testingQuicksortPivotLAst(int randSeed)
 	for (int i = 0; i < CAP; i++)
 	{
 		generateRandomNumbers(arr, capacity[i], 0, capacity[i] * 2, randSeed);
+		auto start = std::chrono::high_resolution_clock::now();
 		quicksortPivotLast(arr, capacity[i]);
+		auto end = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> elapsed = end - start;
+		std::cout << "Quicksort with pivot as last element (random, n=" << capacity[i] << ") took " << elapsed.count() << " seconds\n";
+
 		if (!checkIfSorted(arr, capacity[i]))
 		{
 			e += "Quicksort with pivot as last element did not sort " + std::to_string(capacity[i]) + " random elements\n";
@@ -141,7 +146,12 @@ void testingQuicksortPivotLAst(int randSeed)
 		}
 
 		reverseTheOrder(arr, capacity[i]);
+		start = std::chrono::high_resolution_clock::now();
 		quicksortPivotLast(arr, capacity[i]);
+		end = std::chrono::high_resolution_clock::now();
+		elapsed = end - start;
+		std::cout << "Quicksort with pivot as last element (reversed, n=" << capacity[i] << ") took " << elapsed.count() << " seconds\n";
+
 		if (!checkIfSorted(arr, capacity[i]))
 		{
 			e += "Quicksort with pivot as last element did not sort " + std::to_string(capacity[i]) + " reversed ordered elements";
@@ -160,7 +170,12 @@ void testingQuicksortPivotMedian(int randSeed)
 	for (int i = 0; i < CAP; i++)
 	{
 		generateRandomNumbers(arr, capacity[i], 0, capacity[i] * 2, randSeed);
+		auto start = std::chrono::high_resolution_clock::now();
 		quicksortPivotMedian(arr, capacity[i]);
+		auto end = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> elapsed = end - start;
+		std::cout << "Quicksort with pivot as median element (random, n=" << capacity[i] << ") took " << elapsed.count() << " seconds\n";
+
 		if (!checkIfSorted(arr, capacity[i]))
 		{
 			e += "Quicksort with pivot as median element did not sort " + std::to_string(capacity[i]) + " random elements\n";
@@ -174,8 +189,14 @@ void testingQuicksortPivotMedian(int randSeed)
 			printArray(arr, capacity[i]);
 		}
 
+
 		reverseTheOrder(arr, capacity[i]);
+		start = std::chrono::high_resolution_clock::now();
 		quicksortPivotMedian(arr, capacity[i]);
+		end = std::chrono::high_resolution_clock::now();
+		elapsed = end - start;
+		std::cout << "Quicksort with pivot as median element (reversed, n=" << capacity[i] << ") took " << elapsed.count() << " seconds\n";
+
 		if (!checkIfSorted(arr, capacity[i]))
 		{
 			e += "Quicksort with pivot as median element did not sort " + std::to_string(capacity[i]) + " reversed ordered elements";
@@ -194,33 +215,46 @@ void testingHeapsort(int D, int randSeed)
 	const int numElements = 10; // Set the number of elements to 10
 
 	generateRandomNumbers(arr, numElements, 0, numElements * 2, randSeed);
+
+	auto start = std::chrono::high_resolution_clock::now();
 	heapsort(arr, numElements, D);
+	auto end = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> elapsed = end - start;
+	std::cout << "Heapsort with D=" << D << " (random, n=" << numElements << ") took " << elapsed.count() << " seconds\n";
+
 	if (!checkIfSorted(arr, numElements))
 	{
 		e += "Heapsort with D=" + std::to_string(D) + " did not sort " + std::to_string(numElements) + " random elements\n";
 	}
 
-	generateRandomNumbers(arr, numElements, 0, numElements * 2, randSeed);
+	// Sorting an already sorted array
 	heapsort(arr, numElements, D);
 	if (!checkIfSorted(arr, numElements))
 	{
 		e += "Heapsort with D=" + std::to_string(D) + " did not sort " + std::to_string(numElements) + " ordered elements\n";
 	}
 
-	generateRandomNumbers(arr, numElements, 0, numElements * 2, randSeed);
+	// Sorting a reversed array
 	reverseTheOrder(arr, numElements);
+	start = std::chrono::high_resolution_clock::now();
 	heapsort(arr, numElements, D);
+	end = std::chrono::high_resolution_clock::now();
+	elapsed = end - start;
+	std::cout << "Heapsort with D=" << D << " (reversed, n=" << numElements << ") took " << elapsed.count() << " seconds\n";
+
 	if (!checkIfSorted(arr, numElements))
 	{
-		e += "Heapsort with D=" + std::to_string(D) + " did not sort " + std::to_string(numElements) + " reversed ordered elements";
+		e += "Heapsort with D=" + std::to_string(D) + " did not sort " + std::to_string(numElements) + " reversed ordered elements\n";
 	}
 
 	delete[] arr;
+
 	if (e != "")
 	{
 		throw e;
 	}
 }
+
 
 int main()
 {
