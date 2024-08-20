@@ -1,167 +1,113 @@
-#include "Sorting.h"
-#include <string>
-#include <chrono>
-#include <crtdbg.h>
-#include <fstream>
+#pragma once
 #include <iostream>
-using namespace std;
-using namespace std::chrono;
+#include <algorithm>
+#include <stack>
 
+
+// Quicksort using the last element as pivot
 template<typename T>
-bool checkIfSorted(T arr[], int n) {
-    for (int i = 0; i < n - 1; ++i) {
-        if (arr[i] > arr[i + 1]) {
-            return false;
+int partition(T array[], int left, int right) {
+    T pivot = array[right];
+    int i = left - 1;
+    for (int j = left; j < right; ++j) {
+        if (array[j] <= pivot) {
+            ++i;
+            std::swap(array[i], array[j]);
         }
     }
-    return true;
+    std::swap(array[i + 1], array[right]);
+    return i + 1;
 }
 
-void generateRandomNumbers(int*& arrPtr, int n, int lowerBound, int upperBound, unsigned int seed) {
-    srand(seed);
-    arrPtr = new int[n];
-    for (int i = 0; i < n; ++i) {
-        arrPtr[i] = rand() % (upperBound - lowerBound + 1) + lowerBound;
+template<typename T>
+void quicksortIterativeLast(T array[], int left, int right) {
+    std::stack<std::pair<int, int>> stack;
+    stack.push(std::make_pair(left, right));
+
+    while (!stack.empty()) {
+        std::pair<int, int> bounds = stack.top();
+        stack.pop();
+
+        int l = bounds.first;
+        int r = bounds.second;
+
+        if (l < r) {
+            int pivot = partition(array, l, r);
+            stack.push(std::make_pair(l, pivot - 1));
+            stack.push(std::make_pair(pivot + 1, r));
+        }
     }
 }
 
 template<typename T>
-void reverseTheOrder(T arr[], int n) {
-    for (int i = 0; i < n / 2; ++i) {
-        std::swap(arr[i], arr[n - 1 - i]);
+void quicksortPivotLast(T arr[], int n) {
+    quicksortIterativeLast(arr, 0, n - 1);
+}
+
+template<typename T>
+int partitionMedian(T array[], int left, int right) {
+    int middle = (left + right) / 2;
+
+    // Find the median of the first, middle, and last elements
+    if (array[middle] < array[left])
+        std::swap(array[left], array[middle]);
+    if (array[right] < array[left])
+        std::swap(array[left], array[right]);
+    if (array[right] < array[middle])
+        std::swap(array[middle], array[right]);
+
+    std::swap(array[middle], array[right]); // Move pivot to the end
+
+    return partition(array, left, right);
+}
+
+template<typename T>
+void quicksortIterativeMedian(T array[], int left, int right) {
+    std::stack<std::pair<int, int>> stack;
+    stack.push(std::make_pair(left, right));
+
+    while (!stack.empty()) {
+        std::pair<int, int> bounds = stack.top();
+        stack.pop();
+
+        int l = bounds.first;
+        int r = bounds.second;
+
+        if (l < r) {
+            int pivot = partitionMedian(array, l, r);
+            stack.push(std::make_pair(l, pivot - 1));
+            stack.push(std::make_pair(pivot + 1, r));
+        }
     }
 }
 
-void testSortingAlgorithms(int* arr, int* arrCopy1, int* arrCopy2, int numElements, int d) {
-    // Random array
-    auto start = high_resolution_clock::now();
-    heapsort(arr, numElements, d);
-    auto end = high_resolution_clock::now();
-    auto duration = duration_cast<milliseconds>(end - start);
-    cout << "Heapsort with D=" << d << " (random) took " << duration.count() << " ms\n";
-    if (!checkIfSorted(arr, numElements)) {
-        cout << "Heapsort failed to sort the random array\n";
-    }
+template<typename T>
+void quicksortPivotMedian(T arr[], int n) {
+    quicksortIterativeMedian(arr, 0, n - 1);
+}
 
-    // Quicksort with pivot as last element
-    start = high_resolution_clock::now();
-    quicksortPivotLast(arrCopy1, numElements);
-    end = high_resolution_clock::now();
-    duration = duration_cast<milliseconds>(end - start);
-    cout << "Quicksort with pivot as last element (random) took " << duration.count() << " ms\n";
-    if (!checkIfSorted(arrCopy1, numElements)) {
-        cout << "Quicksort with pivot as last element failed to sort the random array\n";
+// Heapsort with d-ary heap
+template<typename T>
+void heapify(T arr[], int n, int i, int d) {
+    int largest = i;
+    for (int j = 1; j <= d; ++j) {
+        int childIndex = d * i + j;
+        if (childIndex < n && arr[childIndex] > arr[largest])
+            largest = childIndex;
     }
-
-    // Quicksort with pivot as median element
-    start = high_resolution_clock::now();
-    quicksortPivotMedian(arrCopy2, numElements);
-    end = high_resolution_clock::now();
-    duration = duration_cast<milliseconds>(end - start);
-    cout << "Quicksort with pivot as median element (random) took " << duration.count() << " ms\n";
-    if (!checkIfSorted(arrCopy2, numElements)) {
-        cout << "Quicksort with pivot as median element failed to sort the random array\n";
-    }
-
-    // Testing sorted array
-    std::copy(arr, arr + numElements, arrCopy1);
-    std::copy(arr, arr + numElements, arrCopy2);
-    auto sortedStart = high_resolution_clock::now();
-    heapsort(arr, numElements, d);
-    auto sortedEnd = high_resolution_clock::now();
-    duration = duration_cast<milliseconds>(sortedEnd - sortedStart);
-    cout << "Heapsort with D=" << d << " (sorted) took " << duration.count() << " ms\n";
-    if (!checkIfSorted(arr, numElements)) {
-        cout << "Heapsort failed to sort the sorted array\n";
-    }
-
-    // Quicksort with pivot as last element (sorted)
-    sortedStart = high_resolution_clock::now();
-    quicksortPivotLast(arrCopy1, numElements);
-    sortedEnd = high_resolution_clock::now();
-    duration = duration_cast<milliseconds>(sortedEnd - sortedStart);
-    cout << "Quicksort with pivot as last element (sorted) took " << duration.count() << " ms\n";
-    if (!checkIfSorted(arrCopy1, numElements)) {
-        cout << "Quicksort with pivot as last element failed to sort the sorted array\n";
-    }
-
-    // Quicksort with pivot as median element (sorted)
-    sortedStart = high_resolution_clock::now();
-    quicksortPivotMedian(arrCopy2, numElements);
-    sortedEnd = high_resolution_clock::now();
-    duration = duration_cast<milliseconds>(sortedEnd - sortedStart);
-    cout << "Quicksort with pivot as median element (sorted) took " << duration.count() << " ms\n";
-    if (!checkIfSorted(arrCopy2, numElements)) {
-        cout << "Quicksort with pivot as median element failed to sort the sorted array\n";
-    }
-
-    // Testing reversed array
-    reverseTheOrder(arr, numElements);
-    std::copy(arr, arr + numElements, arrCopy1);
-    std::copy(arr, arr + numElements, arrCopy2);
-    auto reversedStart = high_resolution_clock::now();
-    heapsort(arr, numElements, d);
-    auto reversedEnd = high_resolution_clock::now();
-    duration = duration_cast<milliseconds>(reversedEnd - reversedStart);
-    cout << "Heapsort with D=" << d << " (reversed) took " << duration.count() << " ms\n";
-    if (!checkIfSorted(arr, numElements)) {
-        cout << "Heapsort failed to sort the reversed array\n";
-    }
-
-    // Quicksort with pivot as last element (reversed)
-    reversedStart = high_resolution_clock::now();
-    quicksortPivotLast(arrCopy1, numElements);
-    reversedEnd = high_resolution_clock::now();
-    duration = duration_cast<milliseconds>(reversedEnd - reversedStart);
-    cout << "Quicksort with pivot as last element (reversed) took " << duration.count() << " ms\n";
-    if (!checkIfSorted(arrCopy1, numElements)) {
-        cout << "Quicksort with pivot as last element failed to sort the reversed array\n";
-    }
-
-    // Quicksort with pivot as median element (reversed)
-    reversedStart = high_resolution_clock::now();
-    quicksortPivotMedian(arrCopy2, numElements);
-    reversedEnd = high_resolution_clock::now();
-    duration = duration_cast<milliseconds>(reversedEnd - reversedStart);
-    cout << "Quicksort with pivot as median element (reversed) took " << duration.count() << " ms\n";
-    if (!checkIfSorted(arrCopy2, numElements)) {
-        cout << "Quicksort with pivot as median element failed to sort the reversed array\n";
+    if (largest != i) {
+        std::swap(arr[i], arr[largest]);
+        heapify(arr, n, largest, d);
     }
 }
 
-int main() {
-    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-    const int CAP = 3;
-    const int capacities[CAP] = { 100000 }; 
-    int randSeed = 0;
-    int numElements = 0;
-    int* arr = nullptr;
-    int* arrCopy1 = nullptr;
-    int* arrCopy2 = nullptr;
-
-    for (int i = 0; i < CAP; ++i) {
-        numElements = capacities[i];
-
-        // Allocate memory for arrays
-        arr = new int[numElements];
-        // Copy the original array to arrCopy1 and arrCopy2
-        std::copy(arr, arr + numElements, arrCopy1);
-        std::copy(arr, arr + numElements, arrCopy2);
-        // Seed the random number generator and generate random numbers
-        randSeed = rand() % numElements;
-        std::cout << "Testing with " << numElements << " elements...\n";
-        generateRandomNumbers(arr, numElements, 0, numElements * 2, randSeed);
-
-        // Test sorting algorithms with different numbers of threads
-        testSortingAlgorithms(arr, arrCopy1, arrCopy2, numElements, 2);
-        testSortingAlgorithms(arr, arrCopy1, arrCopy2, numElements, 4);
-        testSortingAlgorithms(arr, arrCopy1, arrCopy2, numElements, 8);
-
-        // Deallocate memory after each test
-        delete[] arr;
-        delete[] arrCopy1;
-        delete[] arrCopy2;
+template<typename T>
+void heapsort(T arr[], int n, int d) {
+    for (int i = (n - 1) / d; i >= 0; --i) {
+        heapify(arr, n, i, d);
     }
-
-    return 0;
+    for (int i = n - 1; i >= 0; --i) {
+        std::swap(arr[0], arr[i]);
+        heapify(arr, i, 0, d);
+    }
 }
